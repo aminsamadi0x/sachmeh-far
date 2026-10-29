@@ -1,0 +1,25 @@
+{% extends "shop/base.html" %}
+{% block title %}تنظیمات دعوت | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block content %}
+<div class="authwrap" style="max-width:720px">
+  <nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:profile' %}">پروفایل</a><i>/</i><span>تنظیمات دعوت</span></nav>
+  <div class="phead rv"><h1>تنظیمات <span class="gt">سیستم دعوت</span></h1></div>
+  <form method="post" class="glass rv">
+    {% csrf_token %}
+    <div class="fld chk"><input type="checkbox" name="is_active" id="ra"{% if settings.is_active %} checked{% endif %}><label for="ra">سیستم دعوت فعال باشد</label></div>
+    <h2 style="margin-top:8px">جایزه‌ی دعوت‌کننده</h2>
+    <div class="fgrid2">
+      <div class="fld"><label>نوع تخفیف</label><select name="referrer_discount_type"><option value="percentage"{% if settings.referrer_discount_type == 'percentage' %} selected{% endif %}>درصدی</option><option value="fixed"{% if settings.referrer_discount_type == 'fixed' %} selected{% endif %}>ثابت</option></select></div>
+      <div class="fld"><label>مقدار تخفیف</label><input type="number" step="0.01" name="referrer_discount_amount" value="{{ settings.referrer_discount_amount|stringformat:'s' }}"></div>
+    </div>
+    <div class="fld"><label>اعتبار هدیه (تومان)</label><input type="number" name="referrer_credit_amount" value="{{ settings.referrer_credit_amount|stringformat:'s' }}"></div>
+    <h2 style="margin-top:8px">هدیه‌ی کاربر جدید</h2>
+    <div class="fgrid2">
+      <div class="fld"><label>نوع تخفیف</label><select name="new_user_discount_type"><option value="percentage"{% if settings.new_user_discount_type == 'percentage' %} selected{% endif %}>درصدی</option><option value="fixed"{% if settings.new_user_discount_type == 'fixed' %} selected{% endif %}>ثابت</option></select></div>
+      <div class="fld"><label>مقدار تخفیف</label><input type="number" step="0.01" name="new_user_discount_amount" value="{{ settings.new_user_discount_amount|stringformat:'s' }}"></div>
+    </div>
+    <div class="fld"><label>مدت اعتبار کد (روز)</label><input type="number" name="discount_expiry_days" value="{{ settings.discount_expiry_days }}"></div>
+    <button type="submit" class="btn w">ذخیره</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ festival.title }} | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block meta_description %}{{ festival.content|striptags|truncatechars:150 }}{% endblock %}
+{% block extra_css %}
+<style>
+.fd{max-width:900px;margin-inline:auto}
+.fd .hero{border-radius:30px;overflow:hidden;border:1px solid rgba(205,220,238,.25);margin-bottom:26px}
+.fd .hero img{width:100%;max-height:480px;object-fit:cover;display:block}
+.fd .txt{color:#d6e1f2;font-weight:300;font-size:1.06rem;line-height:2.1}
+.fd .txt p+p{margin-top:14px}
+.fd .meta{color:var(--mute);font-size:.86rem;margin-top:8px}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><a href="{% url 'shop:festival_list' %}">جشنواره‌ها</a><i>/</i><span>{{ festival.title }}</span></nav>
+<div class="fd">
+  <div class="phead rv"><h1>{{ festival.title }}</h1><div class="meta">{{ festival.created_at|date:"Y/m/d" }} · {{ festival.views }} بازدید</div></div>
+  {% if festival.image %}<div class="hero rv"><img src="{{ festival.image.url }}" alt="{{ festival.title }}"></div>{% endif %}
+  <div class="glass txt rv">{{ festival.content|linebreaks }}</div>
+  <div class="cta"><a href="{% url 'shop:festival_list' %}" class="btn o">همه‌ی جشنواره‌ها</a><a href="{% url 'shop:home' %}#col" class="btn w">مشاهده‌ی محصولات</a></div>
+</div>
+{% endblock %}

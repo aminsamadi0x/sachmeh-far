@@ -1,0 +1,36 @@
+{% extends "shop/base.html" %}
+{% block title %}گالری | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.gal{columns:3 240px;column-gap:16px}
+.gal a{display:block;break-inside:avoid;margin-bottom:16px;border-radius:24px;overflow:hidden;border:1px solid rgba(205,220,238,.25);background:var(--ink2);position:relative;transition:border-color .4s,box-shadow .5s}
+.gal a:hover{border-color:var(--gold);box-shadow:0 30px 60px -30px rgba(217,178,90,.4)}
+.gal img{width:100%;transition:transform .9s var(--ease)}
+.gal a:hover img{transform:scale(1.06)}
+.gal span{display:block;padding:10px 16px;font-size:.92rem;color:var(--s2)}
+.gal .ph{aspect-ratio:4/3;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#0f55c4,var(--ink) 80%)}
+.gal .ph svg{width:36%}
+.play{position:absolute;top:12px;left:12px;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:rgba(1,6,16,.75);border:1px solid var(--gold);color:var(--gold2);font-size:.85rem}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>گالری</span></nav>
+<div class="phead rv"><h1><span class="gt">گالری</span> تصاویر</h1><p>نمونه‌ی کارها و محصولات ما.</p></div>
+{% if items %}
+<div class="gal">
+  {% for it in items %}
+  <a class="rv" href="{% url 'shop:gallery_detail' it.pk %}">
+    {% if it.item_type == 'video' %}
+      {% if it.thumbnail %}<img src="{{ it.thumbnail.url }}" alt="{{ it.title }}" loading="lazy">{% else %}<div class="ph"><svg viewBox="0 0 100 100"><use href="#coin"/></svg></div>{% endif %}
+      <i class="play">▶</i>
+    {% elif it.image %}<img src="{{ it.image.url }}" alt="{{ it.title }}" loading="lazy">
+    {% else %}<div class="ph"><svg viewBox="0 0 100 100"><use href="#ingot"/></svg></div>{% endif %}
+    {% if it.title %}<span>{{ it.title }}</span>{% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% include "shop/_pagination.html" %}
+{% else %}
+<div class="empty-box glass"><svg viewBox="0 0 100 100"><use href="#ring"/></svg><p>هنوز موردی در گالری نیست.</p></div>
+{% endif %}
+{% endblock %}

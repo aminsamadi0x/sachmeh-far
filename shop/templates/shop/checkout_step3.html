@@ -1,0 +1,60 @@
+{% extends "shop/base.html" %}
+{% block title %}پرداخت | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.pay{padding:20px 24px;border-radius:24px;border:1px solid rgba(217,178,90,.5);background:rgba(217,178,90,.07);margin-bottom:20px}
+.pay .big{font-size:clamp(1.3rem,3.4vw,1.9rem);font-weight:800;letter-spacing:.08em;margin:6px 0;word-break:break-all;cursor:pointer}
+.pay small{color:var(--mute)}
+.copy{font-size:.8rem;padding:2px 12px;border-radius:99px;border:1px solid rgba(205,220,238,.4);color:var(--s2);margin-inline-start:8px}
+.ntc{color:var(--mute);font-size:.88rem;line-height:1.9;margin-bottom:14px}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><a href="{% url 'shop:cart' %}">سبد خرید</a><i>/</i><span>تسویه حساب</span></nav>
+{% include "shop/_steps.html" with step=3 %}
+<div class="two">
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <div class="glass rv">
+      <h2>{% if payment_method == 'shaba' %}پرداخت با شماره شبا{% else %}پرداخت کارت‌به‌کارت{% endif %}</h2>
+      <p class="ntc">مبلغ <b class="fmt" style="color:#fff">{{ final_amount|stringformat:"d" }}</b> تومان را به حساب زیر واریز کنید و سپس تصویر رسید را بارگذاری کنید.
+        {% if payment_method == 'card' %}برای مبالغ بالاتر از <span class="fmt">{{ min_amount_for_shaba }}</span> تومان پرداخت با شماره شبا انجام می‌شود.{% endif %}</p>
+      {% if site_settings %}
+      <div class="pay">
+        {% if payment_method == 'shaba' %}
+          <small>شماره شبا</small>
+          <div class="big ltr" data-copy="{{ site_settings.shaba_number }}">{{ site_settings.shaba_number }}</div>
+        {% else %}
+          <small>شماره کارت</small>
+          <div class="big ltr" data-copy="{{ site_settings.card_number }}">{{ site_settings.card_number }}</div>
+        {% endif %}
+        <div class="kv" style="margin-top:12px">
+          <div>به نام<b>{{ site_settings.card_holder_name }}</b></div>
+          <div>بانک<b>{{ site_settings.bank_name }}</b></div>
+        </div>
+        <button type="button" class="copy" id="cp">کپی شماره</button>
+      </div>
+      {% endif %}
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="glass rv" novalidate>
+      <h2>بارگذاری رسید</h2>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="nfe">{{ form.non_field_errors }}</div>{% endif %}
+      {% include "shop/_field.html" with field=form.receipt_image %}
+      <div class="cta">
+        <button type="submit" class="btn w">ثبت نهایی سفارش</button>
+        <a href="{% url 'shop:checkout_step2' %}" class="btn o">مرحله‌ی قبل</a>
+      </div>
+    </form>
+  </div>
+  {% include "shop/_order_summary.html" %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  const b=document.getElementById('cp'),t=document.querySelector('[data-copy]');
+  if(b&&t)b.onclick=async()=>{try{await navigator.clipboard.writeText(t.dataset.copy);b.textContent='کپی شد ✓'}catch(e){b.textContent='دستی کپی کنید'}setTimeout(()=>b.textContent='کپی شماره',2000)};
+})();
+</script>
+{% endblock %}

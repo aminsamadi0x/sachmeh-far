@@ -1,0 +1,142 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ product.name }} | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block meta_description %}{{ product.description|truncatechars:150 }}{% endblock %}
+{% block extra_css %}
+<style>
+.pd{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
+@media(max-width:900px){.pd{grid-template-columns:1fr}}
+.gal-box{position:sticky;top:96px}
+@media(max-width:900px){.gal-box{position:static}}
+.stage{position:relative;aspect-ratio:1;border-radius:30px;overflow:hidden;display:grid;place-items:center;border:1px solid rgba(205,220,238,.25);background:radial-gradient(circle at 50% 40%,#0f55c4,var(--navy) 40%,var(--black) 82%)}
+.stage img,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .5s}
+.stage video{object-fit:contain;background:#000}
+.stage svg{width:52%;filter:drop-shadow(0 24px 34px rgba(0,0,0,.6))}
+.stage .tag{top:16px;right:16px}
+.thumbs{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.thumbs button{position:relative;width:78px;height:78px;border-radius:16px;overflow:hidden;border:1.5px solid rgba(205,220,238,.25);background:var(--ink2);transition:border-color .3s,transform .4s var(--ease)}
+.thumbs button:hover{transform:translateY(-3px)}
+.thumbs button.on{border-color:var(--gold)}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.thumbs .vid{display:grid;place-items:center;color:var(--gold2);font-size:1.4rem}
+.info h1{font-size:clamp(2rem,4.4vw,3.4rem);line-height:1.3;font-weight:900;margin:12px 0 18px;background:linear-gradient(180deg,#fff 18%,#dbe3ee 55%,#9aa6b5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.specs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}
+@media(max-width:520px){.specs{grid-template-columns:1fr 1fr}}
+.specs div{border-top:1px solid rgba(205,220,238,.5);padding-top:10px;color:var(--mute);font-size:.85rem}
+.specs b{display:block;font-weight:500;font-size:1.25rem;color:#fff;line-height:1.5}
+.pricebox{margin:8px 0 24px;padding:20px 24px;border-radius:24px;border:1px solid rgba(217,178,90,.4);background:rgba(217,178,90,.06)}
+.pricebox .lbl{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--gold2);font-size:.9rem}
+.pricebox .amt{font-weight:900;font-size:clamp(2rem,4.6vw,3.2rem);line-height:1.4;background:var(--goldg);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pricebox .amt small{font-size:1rem;font-weight:500;margin-inline-start:8px;-webkit-text-fill-color:var(--s2)}
+.desc{color:#c9d6ea;font-weight:300;line-height:2.05}
+.desc p+p{margin-top:10px}
+.buy{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:28px}
+.qty{display:flex;align-items:center;border-radius:99px;border:1px solid rgba(205,220,238,.45);background:rgba(1,6,16,.5)}
+.qty button{width:46px;height:50px;font-size:1.4rem;color:var(--s2)}
+.qty input{width:56px;text-align:center;background:none;border:0;color:#fff;font-weight:700;-moz-appearance:textfield}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+.qty input:focus{outline:none}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(.6)}
+.note{margin-top:14px;color:var(--mute);font-size:.85rem}
+.note a{color:var(--gold2);text-decoration:underline}
+.rel{margin-top:clamp(60px,8vw,110px)}
+.rel h2{font-weight:800;font-size:clamp(1.8rem,4vw,3rem);margin-bottom:28px}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="crumb" aria-label="مسیر">
+  <a href="{% url 'shop:home' %}">خانه</a><i>/</i>
+  <a href="{% url 'shop:product_section' product.section_key %}">{{ product.section_label }}</a><i>/</i>
+  <span>{{ product.name }}</span>
+</nav>
+
+<div class="pd">
+  <!-- ===== گالری: هر چند عکس + یک ویدیو ===== -->
+  <div class="gal-box rv">
+    <div class="stage" id="stage">
+      {% if product.is_new %}<span class="tag">جدید</span>{% elif not product.in_stock %}<span class="tag out">ناموجود</span>{% endif %}
+      {% if images %}
+        <img id="stg-img" src="{{ images.0.image.url }}" alt="{{ product.name }}">
+      {% else %}
+        <svg viewBox="0 0 100 100"><use href="#{% if product.kind == 'shot' %}shot{% else %}ingot{% endif %}"/></svg>
+      {% endif %}
+      {% if product.video %}<video id="stg-vid" src="{{ product.video.url }}" controls playsinline preload="metadata" style="display:none"></video>{% endif %}
+    </div>
+    {% if images|length > 1 or product.video and images %}
+    <div class="thumbs" id="thumbs">
+      {% for img in images %}
+      <button type="button" class="{% if forloop.first %}on{% endif %}" data-src="{{ img.image.url }}" aria-label="تصویر {{ forloop.counter }}"><img src="{{ img.image.url }}" alt="" loading="lazy"></button>
+      {% endfor %}
+      {% if product.video %}<button type="button" class="vid" data-video="1" aria-label="پخش ویدیو">▶</button>{% endif %}
+    </div>
+    {% elif product.video and not images %}
+    <script>document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('stg-vid');if(v)v.style.display='block'})</script>
+    {% endif %}
+  </div>
+
+  <!-- ===== اطلاعات ===== -->
+  <div class="info rv" style="--i:.1s">
+    <span class="chip">{{ product.section_label }}</span>
+    <h1>{{ product.name }}</h1>
+
+    <div class="pricebox">
+      <div class="lbl"><span>قیمت امروز</span><span class="live-dot">به‌روزرسانی لحظه‌ای</span></div>
+      <div class="amt"><span class="pr" data-id="{{ product.id }}">{{ product.price|stringformat:"d" }}</span><small>تومان</small></div>
+    </div>
+
+    <div class="specs">
+      <div>وزن<b>{{ product.weight_display }}</b></div>
+      <div>عیار<b>{{ product.purity }}</b></div>
+      <div>موجودی<b>{% if product.in_stock %}{{ product.stock }} عدد{% else %}ناموجود{% endif %}</b></div>
+    </div>
+
+    <div class="desc">{{ product.description|linebreaks }}</div>
+
+    <form class="buy" action="{% url 'shop:add_to_cart' product.id %}" method="post">
+      {% csrf_token %}
+      {% if product.in_stock %}
+      <div class="qty">
+        <button type="button" id="qm" aria-label="کم کردن">−</button>
+        <input type="number" name="quantity" id="qv" value="1" min="1" max="{{ product.stock }}" inputmode="numeric">
+        <button type="button" id="qp" aria-label="زیاد کردن">+</button>
+      </div>
+      <button type="submit" class="btn w">افزودن به سبد خرید</button>
+      {% else %}
+      <button type="button" class="btn w" disabled>ناموجود</button>
+      {% endif %}
+      <a href="{% url 'shop:chat' %}" class="btn o">پرسش از پشتیبانی</a>
+    </form>
+    {% if not user.is_authenticated %}<p class="note">برای خرید ابتدا <a href="{% url 'shop:login' %}">وارد شوید</a> یا <a href="{% url 'shop:register' %}">ثبت‌نام کنید</a>.</p>{% endif %}
+  </div>
+</div>
+
+{% if related_products %}
+<section class="rel">
+  <h2 class="rv">محصولات <span class="gt">مرتبط</span></h2>
+  <div class="grid">
+    {% for p in related_products %}{% include "shop/_product_card.html" %}{% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  const img=document.getElementById('stg-img'),vid=document.getElementById('stg-vid'),th=document.getElementById('thumbs');
+  if(th)th.addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    th.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    if(b.dataset.video){if(img)img.style.opacity=0;if(vid){vid.style.display='block';vid.play&&vid.play().catch(()=>{})}}
+    else{if(vid){vid.pause();vid.style.display='none'}if(img){img.src=b.dataset.src;img.style.opacity=1}}
+  });
+  const qv=document.getElementById('qv');
+  if(qv){
+    const mx=parseInt(qv.max)||1,clamp=v=>Math.min(mx,Math.max(1,v||1));
+    document.getElementById('qm').onclick=()=>qv.value=clamp(+qv.value-1);
+    document.getElementById('qp').onclick=()=>qv.value=clamp(+qv.value+1);
+    qv.addEventListener('change',()=>qv.value=clamp(+qv.value));
+  }
+})();
+</script>
+{% endblock %}

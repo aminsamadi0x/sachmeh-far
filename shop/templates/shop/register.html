@@ -1,0 +1,27 @@
+{% extends "shop/base.html" %}
+{% block title %}ثبت‌نام | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block content %}
+<div class="authwrap" style="max-width:720px">
+  <div class="phead rv"><h1>ساخت <span class="gt">حساب کاربری</span></h1><p>چند ثانیه وقت می‌برد؛ با کد معرف هدیه‌ی خوش‌آمدگویی بگیرید.</p></div>
+  <form method="post" class="glass rv" style="--i:.08s" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="nfe">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="fgrid2">
+      {% include "shop/_field.html" with field=form.first_name %}
+      {% include "shop/_field.html" with field=form.last_name %}
+    </div>
+    {% include "shop/_field.html" with field=form.username %}
+    <div class="fgrid2">
+      {% include "shop/_field.html" with field=form.email %}
+      {% include "shop/_field.html" with field=form.phone %}
+    </div>
+    <div class="fgrid2">
+      {% include "shop/_field.html" with field=form.password1 %}
+      {% include "shop/_field.html" with field=form.password2 %}
+    </div>
+    {% include "shop/_field.html" with field=form.referral_code %}
+    <button type="submit" class="btn w full">ثبت‌نام</button>
+    <p class="alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'shop:login' %}">وارد شوید</a></p>
+  </form>
+</div>
+{% endblock %}

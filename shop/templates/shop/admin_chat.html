@@ -1,0 +1,63 @@
+{% extends "shop/base.html" %}
+{% block title %}چت پشتیبانی (مدیر) | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}{% include "shop/_chat_css.html" %}
+<style>
+.ac{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.ac{grid-template-columns:1fr}}
+.ulist{display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow-y:auto}
+.u{display:block;padding:12px 16px;border-radius:18px;border:1px solid rgba(205,220,238,.2);background:rgba(1,6,16,.45);transition:border-color .3s}
+.u:hover,.u.on{border-color:var(--gold)}
+.u b{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.u small{display:block;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.u .bd{min-width:22px;height:22px;border-radius:99px;background:var(--goldg);color:var(--black);font-size:.78rem;display:grid;place-items:center;padding:0 6px}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>چت مدیر</span></nav>
+<div class="phead rv"><h1>صندوق <span class="gt">پیام‌ها</span></h1></div>
+<div class="ac">
+  <div class="ulist glass" style="padding:14px">
+    {% for u in users %}
+    <a class="u{% if selected_user and selected_user.id == u.user.id %} on{% endif %}" href="?user_id={{ u.user.id }}">
+      <b><span>{{ u.user.get_full_name|default:u.user.username }}</span>{% if u.unread_count %}<span class="bd">{{ u.unread_count }}</span>{% endif %}</b>
+      <small class="ltr" style="text-align:right">{{ u.phone }}</small>
+      {% if u.last_message %}<small>{{ u.last_message.message|default:"📎 پیوست" }}</small>{% endif %}
+    </a>
+    {% empty %}<p style="color:var(--mute)">کاربری وجود ندارد.</p>{% endfor %}
+  </div>
+
+  {% if selected_user %}
+  <div>
+    <h2 style="font-weight:800;font-size:1.3rem;margin-bottom:10px">{{ selected_user.get_full_name|default:selected_user.username }} <small style="color:var(--mute);font-weight:300">@{{ selected_user.username }}</small></h2>
+    <div class="chatbox">
+      <div class="msgs2" id="msgs">
+        {% for m in user_messages %}
+        <div class="bub {% if m.is_admin %}me{% else %}ot{% endif %}" data-id="{{ m.id }}">
+          {% if m.image %}<a href="{{ m.image.url }}" target="_blank"><img src="{{ m.image.url }}" alt=""></a>{% endif %}
+          {% if m.video %}<video src="{{ m.video.url }}" controls preload="metadata"></video>{% endif %}
+          {% if m.message %}<p>{{ m.message|linebreaksbr }}</p>{% endif %}
+          <time>{{ m.created_at|time:"H:i" }}</time>
+        </div>
+        {% empty %}<div class="noc">پیامی نیست.</div>{% endfor %}
+      </div>
+      <div id="fname"></div>
+      <form id="cform" class="cbar">
+        {% csrf_token %}
+        <label class="att">📎<input type="file" id="cfile" accept="image/*,video/*" hidden></label>
+        <textarea id="cmsg" rows="1" placeholder="پاسخ..."></textarea>
+        <button type="submit" class="send">ارسال</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-box glass"><p>یک کاربر را از لیست انتخاب کنید.</p></div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+{% if selected_user %}
+<script>const IS_ADMIN=true;</script>
+{% url 'shop:admin_chat_messages_api' as fetch_url %}{% url 'shop:admin_chat_send_api' as send_url %}
+{% include "shop/_chat_js.html" with uid=selected_user.id %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "shop/base.html" %}
+{% block title %}سبد خرید | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.cartgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:960px){.cartgrid{grid-template-columns:1fr}}
+.items{display:flex;flex-direction:column;gap:14px}
+.ci{display:grid;grid-template-columns:96px 1fr auto;gap:16px;align-items:center;padding:14px;border-radius:24px;border:1px solid rgba(205,220,238,.22);background:linear-gradient(170deg,rgba(10,58,145,.26),rgba(3,11,26,.88));transition:border-color .4s}
+.ci:hover{border-color:rgba(217,178,90,.6)}
+@media(max-width:620px){.ci{grid-template-columns:76px 1fr}.ci .side{grid-column:1/-1;flex-direction:row!important;justify-content:space-between;align-items:center!important}}
+.ci .th{width:100%;aspect-ratio:1;border-radius:18px;overflow:hidden;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#0f55c4,var(--navy) 40%,var(--black) 80%)}
+.ci .th img{width:100%;height:100%;object-fit:cover}
+.ci .th svg{width:62%}
+.ci h3{font-weight:700;font-size:1.1rem}
+.ci h3 a:hover{color:var(--gold2)}
+.ci .mt{color:var(--mute);font-size:.86rem}
+.ci .unit{margin-top:6px;font-size:.92rem;color:var(--s2)}
+.ci .side{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.ci .lt{font-weight:800;font-size:1.15rem;background:var(--goldg);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stp{display:flex;align-items:center;border-radius:99px;border:1px solid rgba(205,220,238,.4);background:rgba(1,6,16,.5)}
+.stp button{width:38px;height:38px;font-size:1.2rem;color:var(--s2);border-radius:50%}
+.stp button:hover:not(:disabled){background:rgba(205,220,238,.14)}
+.stp button:disabled{opacity:.35;cursor:not-allowed}
+.stp span{min-width:34px;text-align:center;font-weight:700}
+.rm{font-size:.82rem;color:#ff9a9a;padding:2px 8px;border-radius:99px}
+.rm:hover{background:rgba(255,107,107,.12)}
+.sum{position:sticky;top:96px}
+@media(max-width:960px){.sum{position:static}}
+.sum h2{font-weight:800;font-size:1.5rem;margin-bottom:16px}
+.sum .r{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(205,220,238,.14);color:var(--s2)}
+.sum .tot{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 6px;font-weight:700}
+.sum .tot b{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:900;background:var(--goldg);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sum .btn{width:100%;justify-content:center;margin-top:16px}
+.sum .hint2{margin-top:14px;color:var(--mute);font-size:.82rem;line-height:1.8}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>سبد خرید</span></nav>
+
+<div class="phead rv">
+  <h1>سبد <span class="gt">خرید</span></h1>
+  <p>قیمت‌ها مستقیم از روی قیمت جهانی حساب می‌شوند و در این صفحه خودکار به‌روز می‌شوند.</p>
+</div>
+
+{% if cart.items.all %}
+<div class="cartgrid">
+  <div class="items">
+    {% for item in cart.items.all %}
+    <div class="ci rv" style="--i:{{ forloop.counter0|divisibleby:2|yesno:'0s,.06s' }}">
+      <a class="th" href="{% url 'shop:product_detail' item.product.id %}">
+        {% if item.product.main_image %}<img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}">{% else %}<svg viewBox="0 0 100 100"><use href="#{% if item.product.kind == 'shot' %}shot{% else %}ingot{% endif %}"/></svg>{% endif %}
+      </a>
+      <div>
+        <h3><a href="{% url 'shop:product_detail' item.product.id %}">{{ item.product.name }}</a></h3>
+        <div class="mt">{{ item.product.section_label }} · {{ item.product.weight_display }} · عیار {{ item.product.purity }}</div>
+        <div class="unit"><span class="pr" data-id="{{ item.product.id }}">{{ item.product.price|stringformat:"d" }}</span> تومان</div>
+        {% if item.quantity > item.product.stock %}<div class="mt" style="color:#ffb36b">موجودی فقط {{ item.product.stock }} عدد است.</div>{% endif %}
+      </div>
+      <div class="side">
+        <div class="lt"><span class="ltv" data-item="{{ item.id }}">{{ item.total_price|stringformat:"d" }}</span> تومان</div>
+        <form method="post" action="{% url 'shop:update_cart_item' item.id %}" class="stp">
+          {% csrf_token %}
+          <button type="submit" name="action" value="increase" aria-label="زیاد کردن"{% if item.quantity >= item.product.stock %} disabled{% endif %}>+</button>
+          <span>{{ item.quantity }}</span>
+          <button type="submit" name="action" value="decrease" aria-label="کم کردن"{% if item.quantity <= 1 %} disabled{% endif %}>−</button>
+        </form>
+        <form method="post" action="{% url 'shop:update_cart_item' item.id %}">
+          {% csrf_token %}
+          <button type="submit" name="action" value="remove" class="rm">حذف</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <aside class="glass sum rv" style="--i:.1s">
+    <h2>خلاصه‌ی سفارش</h2>
+    <div class="r"><span>تعداد اقلام</span><span>{{ cart.total_quantity }}</span></div>
+    <div class="tot"><span>جمع کل</span><span><b id="ct">{{ cart.total_price|stringformat:"d" }}</b> تومان</span></div>
+    <div class="live-dot">قیمت لحظه‌ای</div>
+    <a href="{% url 'shop:checkout' %}" class="btn w">ادامه و تسویه حساب</a>
+    <p class="hint2">در مرحله‌ی تسویه حساب قیمت برای مدتی قفل می‌شود تا فرصت پرداخت داشته باشید.</p>
+  </aside>
+</div>
+{% else %}
+<div class="empty-box glass">
+  <svg viewBox="0 0 100 100"><use href="#ingot"/></svg>
+  <p>سبد خرید شما خالی است.</p>
+  <div class="cta" style="justify-content:center;margin-top:20px">
+    {% for s in menu_sections %}<a class="btn {% if forloop.first %}w{% else %}o{% endif %}" href="{% url 'shop:product_section' s.key %}">{{ s.name }}</a>{% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  const lt=[...document.querySelectorAll('.ltv[data-item]')],ct=document.getElementById('ct');
+  if(!lt.length)return;
+  const fa=new Intl.NumberFormat('fa-IR');
+  const fmt=el=>{const v=el.textContent.replace(/\D/g,'');if(v)el.textContent=fa.format(v)};
+  lt.forEach(fmt);if(ct)fmt(ct);
+  async function poll(){
+    try{
+      const r=await fetch("{% url 'shop:live_prices_api' %}",{cache:'no-store',credentials:'same-origin'});
+      if(!r.ok)return;const d=await r.json();
+      if(d.cart){lt.forEach(el=>{const v=d.cart.items[el.dataset.item];if(v!=null)el.textContent=fa.format(v)});if(ct)ct.textContent=fa.format(d.cart.total)}
+    }catch(e){}
+  }
+  setInterval(poll,30000);setTimeout(poll,1500);
+})();
+</script>
+{% endblock %}

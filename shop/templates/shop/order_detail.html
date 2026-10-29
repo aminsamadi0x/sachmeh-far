@@ -1,0 +1,64 @@
+{% extends "shop/base.html" %}
+{% block title %}سفارش {{ order.order_number }} | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.rc{border-radius:20px;overflow:hidden;border:1px solid rgba(205,220,238,.25);max-width:420px}
+.rc img{width:100%}
+.oh{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><a href="{% url 'shop:order_history' %}">سفارش‌ها</a><i>/</i><span>{{ order.order_number }}</span></nav>
+
+<div class="phead rv">
+  <div class="oh"><h1 style="font-size:clamp(1.6rem,4vw,2.8rem)" class="ltr">{{ order.order_number }}</h1><span class="stt {{ order.status }}">{{ order.get_status_display }}</span></div>
+  <p>ثبت شده در {{ order.created_at|date:"Y/m/d H:i" }}</p>
+</div>
+
+<div class="two">
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <div class="glass rv">
+      <h2>اطلاعات گیرنده</h2>
+      <div class="kv">
+        <div>نام<b>{{ order.full_name }}</b></div>
+        <div>تلفن<b class="ltr">{{ order.phone }}</b></div>
+        <div>کد پستی<b class="ltr">{{ order.postal_code }}</b></div>
+      </div>
+      <p style="margin-top:12px;color:var(--s2)">{{ order.address }}</p>
+    </div>
+
+    {% if order.cart.items.all %}
+    <div class="glass rv">
+      <h2>اقلام</h2>
+      {% for item in order.cart.items.all %}
+      <div class="row2"><span>{{ item.product.name }} × {{ item.quantity }}</span><span><span class="fmt">{{ item.total_price|stringformat:"d" }}</span> تومان</span></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="glass rv">
+      <h2>رسید پرداخت</h2>
+      {% if order.receipt %}
+        <div class="rc"><img src="{{ order.receipt.receipt_image.url }}" alt="رسید پرداخت"></div>
+        <p style="margin-top:10px;color:var(--mute);font-size:.88rem">بارگذاری شده در {{ order.receipt.uploaded_at|date:"Y/m/d H:i" }}</p>
+      {% elif order.status != 'cancelled' %}
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="fld"><label for="rcp">تصویر رسید</label><input type="file" name="receipt_image" id="rcp" accept="image/*" required></div>
+          <button type="submit" class="btn w">ارسال رسید</button>
+        </form>
+      {% else %}
+        <p style="color:var(--mute)">این سفارش لغو شده است.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside class="glass sumbox rv" style="--i:.1s">
+    <h2>مبلغ</h2>
+    <div class="row2"><span>جمع اقلام</span><span><span class="fmt">{{ order.total_amount|stringformat:"d" }}</span> تومان</span></div>
+    {% if order.discount_code %}<div class="row2 disc"><span>کد تخفیف</span><span class="ltr">{{ order.discount_code.code }}</span></div>{% endif %}
+    <div class="row2 t"><span>مبلغ نهایی</span><span><b class="fmt">{{ order.final_amount|stringformat:"d" }}</b> تومان</span></div>
+    <a href="{% url 'shop:chat' %}" class="btn o s full" style="margin-top:16px">پیگیری با پشتیبانی</a>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "shop/base.html" %}
+{% block title %}سفارش‌های من | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.ol{display:flex;flex-direction:column;gap:12px}
+.oi{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:14px;align-items:center;padding:16px 22px;border-radius:22px;border:1px solid rgba(205,220,238,.22);background:linear-gradient(170deg,rgba(10,58,145,.24),rgba(3,11,26,.88));transition:border-color .4s}
+a.oi:hover{border-color:var(--gold)}
+.oi small{display:block;color:var(--mute);font-size:.8rem}
+.oi .num{font-weight:700;letter-spacing:.04em;direction:ltr;text-align:right}
+@media(max-width:760px){.oi{grid-template-columns:1fr 1fr}}
+.sub2{font-weight:800;font-size:1.5rem;margin:34px 0 14px}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>سفارش‌ها</span></nav>
+<div class="phead rv"><h1>سفارش‌های <span class="gt">من</span></h1></div>
+
+{% if draft_orders %}
+<h2 class="sub2">سفارش‌های نیمه‌کاره</h2>
+<div class="ol">
+  {% for o in draft_orders %}
+  <div class="oi rv">
+    <div><small>ایجاد شده</small>{{ o.created_at|date:"Y/m/d H:i" }}</div>
+    <div><small>مبلغ</small><b class="fmt">{{ o.final_amount|stringformat:"d" }}</b> تومان</div>
+    <div><span class="stt">پیش‌نویس</span></div>
+    <a href="{% url 'shop:continue_order' o.id %}" class="btn w s">ادامه‌ی خرید</a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<h2 class="sub2">سفارش‌های ثبت‌شده</h2>
+{% if orders %}
+<div class="ol">
+  {% for o in orders %}
+  <a class="oi rv" href="{% url 'shop:order_detail' o.id %}">
+    <div><small>شماره سفارش</small><span class="num">{{ o.order_number }}</span></div>
+    <div><small>تاریخ</small>{{ o.created_at|date:"Y/m/d H:i" }}</div>
+    <div><small>مبلغ نهایی</small><b class="fmt">{{ o.final_amount|stringformat:"d" }}</b> تومان</div>
+    <div><span class="stt {{ o.status }}">{{ o.get_status_display }}</span></div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-box glass"><svg viewBox="0 0 100 100"><use href="#coin"/></svg><p>هنوز سفارشی ثبت نکرده‌اید.</p>
+  <div class="cta" style="justify-content:center;margin-top:18px"><a href="{% url 'shop:home' %}#col" class="btn w">شروع خرید</a></div></div>
+{% endif %}
+{% endblock %}

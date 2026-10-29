@@ -1,0 +1,22 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ about.title }} | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.about{display:grid;grid-template-columns:1fr;gap:34px;align-items:center}
+.about.has-img{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.about .pic{border-radius:28px;overflow:hidden;border:1px solid rgba(205,220,238,.25);aspect-ratio:4/3;background:radial-gradient(circle at 50% 40%,#0f55c4,var(--navy) 40%,var(--black) 80%)}
+.about .pic img{width:100%;height:100%;object-fit:cover}
+.about .txt{color:#d6e1f2;font-weight:300;font-size:1.08rem;line-height:2.1}
+.about .txt p+p{margin-top:14px}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>درباره ما</span></nav>
+
+<div class="phead rv"><h1>{{ about.title }}</h1></div>
+
+<div class="about{% if about.image %} has-img{% endif %} glass rv">
+  {% if about.image %}<div class="pic"><img src="{{ about.image.url }}" alt="{{ about.title }}"></div>{% endif %}
+  <div class="txt">{{ about.content|linebreaks }}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ item.title|default:"گالری" }} | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.gd{max-width:980px;margin-inline:auto}
+.gd .media{border-radius:30px;overflow:hidden;border:1px solid rgba(205,220,238,.25);background:#000}
+.gd .media img,.gd .media video{width:100%;display:block;max-height:75vh;object-fit:contain;margin-inline:auto}
+.gd .txt{margin-top:22px;color:#d6e1f2;font-weight:300;line-height:2.05}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><a href="{% url 'shop:gallery_list' %}">گالری</a>{% if item.title %}<i>/</i><span>{{ item.title }}</span>{% endif %}</nav>
+<div class="gd">
+  {% if item.title %}<div class="phead rv"><h1>{{ item.title }}</h1></div>{% endif %}
+  <div class="media rv">
+    {% if item.item_type == 'video' and item.video_file %}<video src="{{ item.video_file.url }}" controls playsinline{% if item.thumbnail %} poster="{{ item.thumbnail.url }}"{% endif %}></video>
+    {% elif item.image %}<img src="{{ item.image.url }}" alt="{{ item.title }}">{% endif %}
+  </div>
+  {% if item.description %}<div class="txt rv">{{ item.description|linebreaks }}</div>{% endif %}
+  <div class="cta"><a href="{% url 'shop:gallery_list' %}" class="btn o">بازگشت به گالری</a></div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "shop/base.html" %}
+{% block title %}پروفایل | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:22px;align-items:start}
+.refbox{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 14px;border-radius:18px;border:1px dashed rgba(217,178,90,.6);margin:10px 0 14px}
+.refbox code{font-size:1.2rem;font-weight:800;letter-spacing:.14em;direction:ltr;color:var(--gold2)}
+.refbox button{padding:4px 14px;border-radius:99px;border:1px solid rgba(205,220,238,.4);font-size:.82rem;color:var(--s2)}
+.lst{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.lst div{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:16px;background:rgba(1,6,16,.45);border:1px solid rgba(205,220,238,.14);font-size:.92rem}
+.lst .used{opacity:.5;text-decoration:line-through}
+.cr{font-size:2rem;font-weight:900;background:var(--goldg);-webkit-background-clip:text;background-clip:text;color:transparent}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>پروفایل</span></nav>
+<div class="phead rv">
+  <h1>سلام <span class="gt">{{ user.get_full_name|default:user.username }}</span></h1>
+  <div class="chips"><a class="chp" href="{% url 'shop:order_history' %}">سفارش‌های من</a><a class="chp" href="{% url 'shop:cart' %}">سبد خرید</a><a class="chp" href="{% url 'shop:chat' %}">پشتیبانی</a>{% if user.is_staff %}<a class="chp" href="{% url 'shop:referral_settings' %}">تنظیمات دعوت</a>{% endif %}</div>
+</div>
+
+<div class="cols">
+  <form method="post" class="glass rv">
+    <h2>اطلاعات من</h2>
+    {% csrf_token %}
+    <div class="fld"><label for="pf1">نام و نام خانوادگی</label><input id="pf1" name="full_name" value="{{ profile.full_name }}"></div>
+    <div class="fld"><label for="pf2">شماره تماس</label><input id="pf2" name="phone" value="{{ profile.phone }}" class="ltr" inputmode="tel"></div>
+    <div class="fld"><label for="pf3">آدرس</label><textarea id="pf3" name="address" rows="3">{{ profile.address }}</textarea></div>
+    <div class="fld"><label for="pf4">کد پستی</label><input id="pf4" name="postal_code" value="{{ profile.postal_code }}" class="ltr" inputmode="numeric"></div>
+    <button type="submit" class="btn w">ذخیره</button>
+  </form>
+
+  <div style="display:flex;flex-direction:column;gap:22px">
+    {% if referral_settings.is_active %}
+    <div class="glass rv" style="--i:.06s">
+      <h2>دعوت از دوستان</h2>
+      <p style="color:var(--s2);font-size:.92rem">کد معرف شما را دوستانتان هنگام ثبت‌نام وارد کنند، هر دو نفر کد تخفیف می‌گیرید.</p>
+      <div class="refbox"><code id="rc">{{ profile.referral_code }}</code>
+        <button type="button" id="cpl" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'shop:register' %}?ref={{ profile.referral_code }}">کپی لینک دعوت</button></div>
+      <div class="row2"><span>اعتبار شما</span><span><b class="cr fmt">{{ profile.credits|stringformat:"d" }}</b> تومان</span></div>
+      {% if referral_logs %}
+      <h2 style="margin-top:18px;font-size:1.1rem">دعوت‌های موفق</h2>
+      <div class="lst">{% for l in referral_logs %}<div><span>{{ l.new_user.username }}</span><span>{{ l.created_at|date:"Y/m/d" }}</span></div>{% endfor %}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="glass rv" style="--i:.1s">
+      <h2>کدهای تخفیف من</h2>
+      {% if discount_codes %}
+      <div class="lst">
+        {% for c in discount_codes %}
+        <div class="{% if c.is_used %}used{% endif %}"><b class="ltr">{{ c.code }}</b>
+          <span>{% if c.discount_type == 'percentage' %}{{ c.amount|floatformat:"-2" }}٪{% else %}<span class="fmt">{{ c.amount|stringformat:"d" }}</span> تومان{% endif %}</span>
+          <small style="color:var(--mute)">{% if c.is_used %}استفاده شده{% else %}تا {{ c.expires_at|date:"Y/m/d" }}{% endif %}</small></div>
+        {% endfor %}
+      </div>
+      {% else %}<p style="color:var(--mute)">کد تخفیفی ندارید.</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){const b=document.getElementById('cpl');if(!b)return;b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.link);b.textContent='کپی شد ✓'}catch(e){b.textContent='دستی کپی کنید'}setTimeout(()=>b.textContent='کپی لینک دعوت',2000)}})();
+</script>
+{% endblock %}
