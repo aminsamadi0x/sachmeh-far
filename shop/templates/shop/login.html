@@ -1,0 +1,15 @@
+{% extends "shop/base.html" %}
+{% block title %}ورود | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block content %}
+<div class="authwrap">
+  <div class="phead rv"><h1>ورود <span class="gt">به حساب</span></h1><p>برای خرید و پیگیری سفارش‌ها وارد شوید.</p></div>
+  <form method="post" class="glass rv" style="--i:.08s" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="nfe">{{ form.non_field_errors }}</div>{% endif %}
+    {% include "shop/_field.html" with field=form.username %}
+    {% include "shop/_field.html" with field=form.password %}
+    <button type="submit" class="btn w full">ورود</button>
+    <p class="alt">حساب ندارید؟ <a href="{% url 'shop:register' %}">ثبت‌نام کنید</a></p>
+  </form>
+</div>
+{% endblock %}

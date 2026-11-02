@@ -1,0 +1,44 @@
+<script>
+(function(){
+  const box=document.getElementById('msgs'),form=document.getElementById('cform'),inp=document.getElementById('cmsg'),file=document.getElementById('cfile'),fname=document.getElementById('fname');
+  if(!box||!form)return;
+  const FETCH="{{ fetch_url }}",SEND="{{ send_url }}",UID="{{ uid|default:'' }}";
+  const csrf=form.querySelector('[name=csrfmiddlewaretoken]').value;
+  let last=0;
+  box.querySelectorAll('[data-id]').forEach(e=>{last=Math.max(last,+e.dataset.id)});
+  const down=()=>{box.scrollTop=box.scrollHeight};down();
+  const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+  function add(m){
+    if(box.querySelector('[data-id="'+m.id+'"]'))return;
+    const mine=(m.is_admin===IS_ADMIN);
+    let h='<div class="bub '+(mine?'me':'ot')+'" data-id="'+m.id+'">';
+    if(m.image_url)h+='<a href="'+m.image_url+'" target="_blank"><img src="'+m.image_url+'" alt=""></a>';
+    if(m.video_url)h+='<video src="'+m.video_url+'" controls preload="metadata"></video>';
+    if(m.message)h+='<p>'+esc(m.message).replace(/\n/g,'<br>')+'</p>';
+    h+='<time>'+m.created_at+'</time></div>';
+    const empty=box.querySelector('.noc');if(empty)empty.remove();
+    box.insertAdjacentHTML('beforeend',h);last=Math.max(last,m.id);down();
+  }
+  async function poll(){
+    try{
+      const r=await fetch(FETCH+'?last_id='+last+(UID?'&user_id='+UID:''),{cache:'no-store',credentials:'same-origin'});
+      if(!r.ok)return;const d=await r.json();(d.messages||[]).forEach(add);
+    }catch(e){}
+  }
+  setInterval(poll,4000);
+  file.addEventListener('change',()=>{fname.textContent=file.files[0]?file.files[0].name:''});
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!inp.value.trim()&&!file.files[0])return;
+    const fd=new FormData();fd.append('message',inp.value.trim());if(file.files[0])fd.append('file',file.files[0]);if(UID)fd.append('user_id',UID);
+    const btn=form.querySelector('button[type=submit]');btn.disabled=true;
+    try{
+      const r=await fetch(SEND,{method:'POST',body:fd,headers:{'X-CSRFToken':csrf},credentials:'same-origin'});
+      const d=await r.json();
+      if(d.success){add(d.message);inp.value='';file.value='';fname.textContent=''}
+    }catch(err){}
+    btn.disabled=false;inp.focus();
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
+})();
+</script>

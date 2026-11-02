@@ -1,0 +1,102 @@
+{% extends "shop/base.html" %}
+{% block title %}مشخصات و ارسال | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.dms{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:6px 0 22px}
+.dm{position:relative;display:flex;flex-direction:column;gap:4px;padding:16px 18px;border-radius:22px;border:1px solid rgba(205,220,238,.3);background:rgba(1,6,16,.45);cursor:pointer;transition:border-color .3s,background .3s,box-shadow .4s}
+.dm:hover{border-color:rgba(217,178,90,.6)}
+.dm input{position:absolute;opacity:0;pointer-events:none}
+.dm b{font-weight:700}
+.dm small{color:var(--mute);font-size:.8rem;line-height:1.7}
+.dm:has(input:checked){border-color:var(--gold);background:rgba(217,178,90,.09);box-shadow:0 18px 40px -26px rgba(217,178,90,.6)}
+.dm:has(input:checked)::after{content:"✓";position:absolute;top:12px;left:14px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--goldg);color:var(--black);font-weight:700;font-size:.85rem}
+.sec-t{font-weight:800;font-size:1.15rem;margin:22px 0 12px;display:flex;align-items:center;gap:10px}
+.sec-t::after{content:"";flex:1;height:1px;background:rgba(205,220,238,.2)}
+.opt{display:none}
+.opt.show{display:block;animation:fadeIn .5s var(--ease)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}}
+.pk{padding:14px 18px;border-radius:18px;border:1px dashed rgba(217,178,90,.5);color:var(--s2);font-size:.92rem;line-height:2}
+.pk b{color:var(--gold2)}
+.other{padding:18px 20px;border-radius:22px;border:1px solid rgba(205,220,238,.22);background:rgba(1,6,16,.35);margin-top:6px}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><a href="{% url 'shop:cart' %}">سبد خرید</a><i>/</i><span>تسویه حساب</span></nav>
+{% include "shop/_steps.html" with step=1 %}
+<div class="two">
+  <form method="post" class="glass rv" id="f1" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="nfe">{{ form.non_field_errors }}</div>{% endif %}
+
+    <h2>روش دریافت</h2>
+    <div class="dms">
+      {% for r in form.delivery_method %}
+      <label class="dm">
+        <input type="radio" name="{{ r.data.name }}" value="{{ r.data.value }}"{% if r.data.selected %} checked{% endif %}>
+        <b>{{ r.choice_label }}</b>
+        <small>{% if r.data.value == 'pickup' %}تحویل حضوری در محل فروشگاه{% elif r.data.value == 'tipax' %}ارسال به آدرس شما با تیپاکس{% else %}ارسال به آدرس شما با ایرکس{% endif %}</small>
+      </label>
+      {% endfor %}
+    </div>
+    {% for e in form.delivery_method.errors %}<em class="err" style="color:#ff9a9a;font-style:normal">{{ e }}</em>{% endfor %}
+
+    <div class="sec-t">مشخصات شما</div>
+    <div class="fgrid2">
+      {% include "shop/_field.html" with field=form.full_name %}
+      {% include "shop/_field.html" with field=form.phone %}
+    </div>
+
+    <div class="fld chk" style="margin-top:4px">
+      {{ form.send_to_other }}
+      <label for="{{ form.send_to_other.id_for_label }}">{{ form.send_to_other.label }}</label>
+    </div>
+    <div class="opt other" id="o-other">
+      <div class="fgrid2">
+        {% include "shop/_field.html" with field=form.recipient_name %}
+        {% include "shop/_field.html" with field=form.recipient_phone %}
+      </div>
+    </div>
+
+    <div class="opt" id="o-pickup">
+      <div class="sec-t">دریافت حضوری</div>
+      <div class="pk">
+        {% if site_settings.address_line1 %}
+        <b>آدرس:</b> {{ site_settings.address_state }}{% if site_settings.address_city %}، {{ site_settings.address_city }}{% endif %}، {{ site_settings.address_line1 }}{% if site_settings.address_line2 %}، {{ site_settings.address_line2 }}{% endif %}<br>
+        {% if site_settings.phone1 %}<b>تلفن:</b> <span class="ltr">{{ site_settings.phone1 }}</span>{% endif %}
+        {% else %}سفارش شما را حضوری تحویل می‌گیرید؛ هماهنگی زمان از طریق پشتیبانی انجام می‌شود.{% endif %}
+      </div>
+    </div>
+
+    <div class="opt" id="o-ship">
+      <div class="sec-t">آدرس ارسال <span id="ship-who" style="font-weight:300;color:var(--mute);font-size:.88rem"></span></div>
+      {% include "shop/_field.html" with field=form.address %}
+      {% include "shop/_field.html" with field=form.postal_code %}
+    </div>
+
+    <div class="cta" style="margin-top:10px">
+      <button type="submit" class="btn w">ادامه</button>
+      <a href="{% url 'shop:cart' %}" class="btn o">بازگشت به سبد</a>
+    </div>
+  </form>
+  {% include "shop/_order_summary.html" %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  const f=document.getElementById('f1');
+  const radios=[...f.querySelectorAll('input[name=delivery_method]')];
+  const chk=f.querySelector('[name=send_to_other]');
+  const oOther=document.getElementById('o-other'),oPick=document.getElementById('o-pickup'),oShip=document.getElementById('o-ship'),who=document.getElementById('ship-who');
+  function sync(){
+    const m=(radios.find(r=>r.checked)||{}).value||'pickup';
+    const ship=m==='tipax'||m==='irex';
+    oPick.classList.toggle('show',!ship);
+    oShip.classList.toggle('show',ship);
+    oOther.classList.toggle('show',chk.checked);
+    who.textContent=chk.checked?'(آدرس گیرنده)':'';
+  }
+  radios.forEach(r=>r.addEventListener('change',sync));chk.addEventListener('change',sync);sync();
+})();
+</script>
+{% endblock %}

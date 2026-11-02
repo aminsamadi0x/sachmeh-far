@@ -1,0 +1,9 @@
+<a class="card rv tilt" href="{% url 'shop:product_detail' p.id %}" style="--i:{{ forloop.counter0|divisibleby:4|yesno:'0s,.08s' }}">
+  <div class="pic">
+    {% if p.is_new %}<span class="tag">جدید</span>{% elif not p.in_stock %}<span class="tag out">ناموجود</span>{% endif %}
+    {% if p.main_image %}<img src="{{ p.main_image.url }}" alt="{{ p.name }}" loading="lazy">{% else %}<svg viewBox="0 0 100 100"><use href="#{% if p.kind == 'shot' %}shot{% else %}ingot{% endif %}"/></svg>{% endif %}
+  </div>
+  <h3>{{ p.name }}</h3>
+  <p class="meta">{{ p.weight_display }} · عیار {{ p.purity }}</p>
+  <div class="row"><b><span class="pr" data-id="{{ p.id }}">{{ p.price|stringformat:"d" }}</span> تومان</b><span class="go">←</span></div>
+</a>

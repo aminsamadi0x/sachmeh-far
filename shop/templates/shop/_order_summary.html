@@ -1,0 +1,14 @@
+<aside class="glass sumbox rv" style="--i:.1s">
+  <h2>خلاصه‌ی سفارش</h2>
+  {% for item in cart.items.all %}
+  <div class="row2"><span>{{ item.product.name }} × {{ item.quantity }}</span><span><span class="fmt">{{ item.total_price|stringformat:"d" }}</span> تومان</span></div>
+  {% endfor %}
+  {% if initial_total %}
+  <div class="row2"><span>جمع اقلام</span><span><span class="fmt">{{ initial_total|stringformat:"d" }}</span> تومان</span></div>
+  {% if discount_amount %}<div class="row2 disc"><span>تخفیف</span><span>− <span class="fmt">{{ discount_amount|stringformat:"d" }}</span> تومان</span></div>{% endif %}
+  <div class="row2 t"><span>مبلغ قابل پرداخت</span><span><b class="fmt">{{ final_amount|stringformat:"d" }}</b> تومان</span></div>
+  {% else %}
+  <div class="row2 t"><span>جمع کل</span><span><b class="fmt">{{ cart.total_price|stringformat:"d" }}</b> تومان</span></div>
+  {% endif %}
+  <a href="{% url 'shop:checkout_cancel' %}" class="btn o s full" style="margin-top:16px" onclick="return confirm('فرآیند ثبت سفارش لغو شود؟')">لغو سفارش</a>
+</aside>

@@ -1,0 +1,31 @@
+{% extends "shop/base.html" %}
+{% block title %}پشتیبانی | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}{% include "shop/_chat_css.html" %}{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>پشتیبانی</span></nav>
+<div class="phead rv"><h1>گفتگو با <span class="gt">پشتیبانی</span></h1><p>پیام، عکس یا ویدیو بفرستید؛ پاسخ همین‌جا نمایش داده می‌شود.</p></div>
+<div class="chatbox rv">
+  <div class="msgs2" id="msgs">
+    {% for m in chat_messages %}
+    <div class="bub {% if m.is_admin %}ot{% else %}me{% endif %}" data-id="{{ m.id }}">
+      {% if m.image %}<a href="{{ m.image.url }}" target="_blank"><img src="{{ m.image.url }}" alt=""></a>{% endif %}
+      {% if m.video %}<video src="{{ m.video.url }}" controls preload="metadata"></video>{% endif %}
+      {% if m.message %}<p>{{ m.message|linebreaksbr }}</p>{% endif %}
+      <time>{{ m.created_at|time:"H:i" }}</time>
+    </div>
+    {% empty %}<div class="noc">هنوز پیامی ندارید. سلام کنید 👋</div>{% endfor %}
+  </div>
+  <div id="fname"></div>
+  <form id="cform" class="cbar">
+    {% csrf_token %}
+    <label class="att" title="پیوست عکس یا ویدیو">📎<input type="file" id="cfile" accept="image/*,video/*" hidden></label>
+    <textarea id="cmsg" rows="1" placeholder="پیام خود را بنویسید..."></textarea>
+    <button type="submit" class="send">ارسال</button>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>const IS_ADMIN=false;</script>
+{% url 'shop:chat_messages_api' as fetch_url %}{% url 'shop:chat_send_api' as send_url %}
+{% include "shop/_chat_js.html" %}
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "shop/base.html" %}
+{% block title %}بررسی سفارش | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.lock{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 20px;border-radius:20px;border:1px solid rgba(217,178,90,.45);background:rgba(217,178,90,.07);margin-bottom:20px;color:var(--gold2);font-size:.92rem}
+.lock b{font-size:1.2rem;color:#fff;font-variant-numeric:tabular-nums;direction:ltr}
+.codes{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px}
+.codes button{padding:5px 14px;border-radius:99px;border:1px dashed rgba(217,178,90,.6);color:var(--gold2);font-size:.85rem;direction:ltr}
+.codes button:hover{background:rgba(217,178,90,.12)}
+#dmsg{font-size:.88rem;margin-top:-8px;margin-bottom:12px;min-height:1.4em}
+.ship{color:var(--s2);line-height:2;font-size:.95rem}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><a href="{% url 'shop:cart' %}">سبد خرید</a><i>/</i><span>تسویه حساب</span></nav>
+{% include "shop/_steps.html" with step=2 %}
+<div class="two">
+  <div style="display:flex;flex-direction:column;gap:20px">
+    {% if order.price_locked_until %}
+    <div class="lock rv"><span>قیمت‌ها تا پایان این زمان ثابت است</span><b id="lockleft" data-until="{{ order.price_locked_until|date:'c' }}">--:--</b></div>
+    {% endif %}
+
+    <div class="glass rv">
+      <h2>گیرنده</h2>
+      <div class="kv">
+        <div>نام<b>{{ order.full_name }}</b></div>
+        <div>تلفن<b class="ltr">{{ order.phone }}</b></div>
+        <div>کد پستی<b class="ltr">{{ order.postal_code }}</b></div>
+      </div>
+      <p class="ship" style="margin-top:12px">{{ order.address }}</p>
+      <a href="{% url 'shop:checkout_step1' %}" class="btn o s" style="margin-top:10px">ویرایش اطلاعات</a>
+    </div>
+
+    <form method="post" class="glass rv" novalidate>
+      <h2>کد تخفیف</h2>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="nfe">{{ form.non_field_errors }}</div>{% endif %}
+      {% if user.has_unused_discount_codes %}
+      <div class="codes">{% for c in user.get_unused_discount_codes %}<button type="button" data-code="{{ c.code }}">{{ c.code }}</button>{% endfor %}</div>
+      {% endif %}
+      {% include "shop/_field.html" with field=form.discount_code %}
+      <div id="dmsg"></div>
+      <div class="cta">
+        <button type="submit" class="btn w">تأیید و ادامه</button>
+        <button type="button" class="btn o" id="chk">بررسی کد</button>
+      </div>
+    </form>
+  </div>
+  {% include "shop/_order_summary.html" %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  const fa=new Intl.NumberFormat('fa-IR');
+  const left=document.getElementById('lockleft');
+  if(left){
+    const until=new Date(left.dataset.until).getTime();
+    const tick=()=>{let s=Math.max(0,Math.round((until-Date.now())/1000));const m=Math.floor(s/60);s%=60;left.textContent=fa.format(m).padStart(1,'۰')+':'+String(s).padStart(2,'0').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);if(until<=Date.now())left.textContent='منقضی شد'};
+    tick();setInterval(tick,1000);
+  }
+  const input=document.getElementById('{{ form.discount_code.id_for_label }}'),msg=document.getElementById('dmsg');
+  document.querySelectorAll('.codes button').forEach(b=>b.onclick=()=>{input.value=b.dataset.code;input.focus()});
+  document.getElementById('chk').onclick=async()=>{
+    const code=input.value.trim();if(!code){msg.style.color='#ff9a9a';msg.textContent='کد تخفیف را وارد کنید';return}
+    const fd=new FormData();fd.append('code',code);fd.append('csrfmiddlewaretoken',document.querySelector('[name=csrfmiddlewaretoken]').value);
+    try{const r=await fetch("{% url 'shop:validate_discount' %}",{method:'POST',body:fd,credentials:'same-origin'});const d=await r.json();
+      msg.style.color=d.valid?'#9fe8c4':'#ff9a9a';
+      msg.textContent=d.valid?(d.message+' — '+(d.discount_type==='percentage'?fa.format(d.amount)+'٪':fa.format(d.amount)+' تومان')+' تخفیف'):d.message;
+    }catch(e){msg.style.color='#ff9a9a';msg.textContent='خطا در ارتباط'}
+  };
+})();
+</script>
+{% endblock %}

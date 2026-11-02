@@ -1,0 +1,21 @@
+{% extends "shop/base.html" %}
+{% block title %}قوانین و مقررات | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>.terms{max-width:860px;color:#d6e1f2;font-weight:300;line-height:2.1}.terms h2{font-size:1.25rem;font-weight:700;color:#fff;margin:26px 0 6px}.terms ol{padding-inline-start:22px;list-style:decimal}</style>
+{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>قوانین و مقررات</span></nav>
+<div class="phead rv"><h1>قوانین و <span class="gt">مقررات</span></h1></div>
+<div class="glass terms rv">
+  <h2>قیمت‌گذاری</h2>
+  <p>قیمت محصولات به‌صورت خودکار و لحظه‌ای بر اساس قیمت جهانی فلز و وزن و عیار هر محصول محاسبه می‌شود و ممکن است در طول روز تغییر کند.</p>
+  <h2>قفل قیمت هنگام خرید</h2>
+  <p>در مرحله‌ی تسویه حساب، قیمت سفارش برای مدت محدودی ثابت می‌ماند. پس از پایان این زمان، مبلغ دوباره محاسبه می‌شود و باید تأیید شود.</p>
+  <h2>پرداخت</h2>
+  <p>پرداخت از طریق کارت‌به‌کارت یا شماره شبا انجام می‌شود و پس از آن باید تصویر رسید در سایت بارگذاری شود. سفارش پس از بررسی رسید توسط پشتیبانی تأیید می‌شود.</p>
+  <h2>کد تخفیف</h2>
+  <p>هر کد تخفیف فقط یک بار و پیش از تاریخ انقضا قابل استفاده است و مخصوص همان حساب کاربری است.</p>
+  <h2>ارتباط با ما</h2>
+  <p>برای هر پرسشی از بخش <a href="{% url 'shop:chat' %}" style="color:var(--gold2)">چت پشتیبانی</a> یا <a href="{% url 'shop:faq_list' %}" style="color:var(--gold2)">سوالات متداول</a> کمک بگیرید.</p>
+</div>
+{% endblock %}

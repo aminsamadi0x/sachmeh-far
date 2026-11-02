@@ -1,0 +1,24 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ section.name }} | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>{{ section.name }}</span></nav>
+
+<div class="phead rv">
+  <h1>{{ section.name }}</h1>
+  <p>قیمت همه‌ی محصولات این بخش به‌صورت لحظه‌ای از روی قیمت جهانی به‌روز می‌شود.</p>
+  <div class="chips">
+    {% for s in menu_sections %}<a class="chp{% if s.key == section.key %} on{% endif %}" href="{% url 'shop:product_section' s.key %}">{{ s.name }}</a>{% endfor %}
+  </div>
+</div>
+
+{% if products %}
+<div class="grid">
+  {% for p in products %}{% include "shop/_product_card.html" %}{% endfor %}
+</div>
+{% else %}
+<div class="empty-box glass">
+  <svg viewBox="0 0 100 100"><use href="#ingot"/></svg>
+  <p>هنوز محصولی در بخش «{{ section.name }}» ثبت نشده است.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "shop/base.html" %}
+{% block title %}جستجوی «{{ query }}» | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block content %}
+<nav class="crumb" aria-label="مسیر"><a href="{% url 'shop:home' %}">خانه</a><i>/</i><span>جستجو</span></nav>
+
+<div class="phead rv">
+  <h1>نتایج جستجو</h1>
+  <p>برای «{{ query }}» — {{ products|length }} محصول پیدا شد.</p>
+  <form class="sform" action="{% url 'shop:search_results' %}" method="get" style="margin-top:20px">
+    <input type="text" name="q" value="{{ query }}" placeholder="جستجوی محصول...">
+    <button type="submit">جستجو</button>
+  </form>
+</div>
+
+{% if products %}
+<div class="grid">
+  {% for p in products %}{% include "shop/_product_card.html" %}{% endfor %}
+</div>
+{% else %}
+<div class="empty-box glass">
+  <svg viewBox="0 0 100 100"><use href="#shot"/></svg>
+  <p>محصولی با این عبارت پیدا نشد. نام دیگری را امتحان کنید.</p>
+</div>
+{% endif %}
+{% endblock %}
