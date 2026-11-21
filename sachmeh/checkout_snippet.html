@@ -1,0 +1,6 @@
+{# داخل checkout_step2.html و checkout_step3.html، بین ردیف «تخفیف» و ردیف «مبلغ نهایی» بگذارید #}
+{% if order.delivery_method != 'pickup' %}
+<div class="row2"><span>هزینه ارسال ({{ order.get_delivery_method_display }})</span>
+  <span>{% if shipping_cost %}<span class="fmt">{{ shipping_cost|floatformat:0 }}</span> تومان{% else %}رایگان / پس‌کرایه{% endif %}</span></div>
+{% endif %}
+{# در order_detail.html همین را با order.shipping_cost به‌جای shipping_cost بگذارید #}

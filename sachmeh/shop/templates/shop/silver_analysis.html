@@ -1,0 +1,78 @@
+{% extends "shop/base.html" %}
+{% block title %}تحلیل نقره | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block meta_description %}تحلیل‌های تخصصی بازار نقره — {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block extra_css %}
+<style>
+.sa-wrap{max-width:760px;margin-inline:auto}
+.sa-head{margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid rgba(205,220,238,.14)}
+.sa-head h1{font-weight:800;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.3;margin-bottom:8px;color:#fff}
+.sa-head p{color:var(--mute);font-weight:300;font-size:.94rem;line-height:1.9;margin:0}
+.sa-list{display:flex;flex-direction:column;gap:32px}
+.sa-item{display:flex;gap:16px;align-items:flex-start;padding-bottom:32px;border-bottom:1px solid rgba(205,220,238,.1)}
+.sa-item:last-child{border-bottom:0;padding-bottom:0}
+.sa-thumb{flex:0 0 180px;width:180px;height:130px;border-radius:10px;overflow:hidden;border:1px solid rgba(205,220,238,.15);background:rgba(255,255,255,.03)}
+.sa-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.sa-thumb.empty{display:grid;place-items:center}
+.sa-thumb.empty svg{width:40%;opacity:.5}
+.sa-body{flex:1;min-width:0}
+.sa-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--mute);font-size:.78rem;margin-bottom:6px}
+.sa-meta .tag{color:var(--gold2);font-weight:500}
+.sa-meta .dot{opacity:.4}
+.sa-body h2{font-weight:700;font-size:1.1rem;line-height:1.5;margin:0 0 6px;color:#fff}
+.sa-body h2 a{transition:color .3s}
+.sa-body h2 a:hover{color:var(--gold2)}
+.sa-excerpt{color:#c3d1e8;font-weight:300;font-size:.9rem;line-height:1.85;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sa-more{display:inline-flex;align-items:center;gap:6px;color:var(--gold2);font-size:.86rem;transition:gap .3s}
+.sa-more:hover{gap:10px}
+.sa-empty{padding:40px 0;color:var(--mute);text-align:center}
+@media(max-width:600px){
+  .sa-item{flex-direction:column;gap:12px}
+  .sa-thumb{flex:none;width:100%;height:160px}
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="sa-wrap">
+  <div class="sa-head rv">
+    <div class="crumb"><a href="{% url 'shop:home' %}">خانه</a><i>›</i><span>تحلیل نقره</span></div>
+    <h1>تحلیل نقره</h1>
+    <p>بررسی روند قیمت، نسبت طلا به نقره و چشم‌انداز بازار نقره — مقاله‌های کوتاه و خوانا.</p>
+  </div>
+
+  {% if analyses %}
+  <div class="sa-list">
+    {% for a in analyses %}
+    <article class="sa-item rv">
+      <a class="sa-thumb {% if not a.image %}empty{% endif %}" href="{% url 'shop:silver_analysis_detail' a.slug %}">
+        {% if a.image %}
+          <img src="{{ a.image.url }}" alt="{{ a.title }}" loading="lazy">
+        {% else %}
+          <svg viewBox="0 0 100 100"><use href="#ingot"/></svg>
+        {% endif %}
+      </a>
+
+      <div class="sa-body">
+        <div class="sa-meta">
+          <span class="tag">تحلیل</span>
+          <span class="dot">·</span>
+          <span>{{ a.created_at|date:"Y/m/d" }}</span>
+        </div>
+
+        <h2><a href="{% url 'shop:silver_analysis_detail' a.slug %}">{{ a.title }}</a></h2>
+
+        {% if a.intro %}
+        <p class="sa-excerpt">{{ a.intro|striptags }}</p>
+        {% endif %}
+
+        <a class="sa-more" href="{% url 'shop:silver_analysis_detail' a.slug %}">
+          ادامه‌ی مطلب <span>←</span>
+        </a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="sa-empty rv">هنوز تحلیلی منتشر نشده است.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "shop/base.html" %}
+{% block title %}{% if section.key == 'shot' %}خرید ساچمه نقره با قیمت روز{% elif section.key == 'silver-bar' %}خرید شمش نقره و خرید نقره با قیمت روز{% elif section.key == 'copper-bar' %}خرید شمش مس و خرید مس با قیمت روز{% else %}{{ section.name }}{% endif %} | ساچمه فر{% endblock %}
+{% block meta_description %}{% if section.key == 'shot' %}خرید ساچمه نقره با قیمت روز در ساچمه فر. قیمت ساچمه نقره بر اساس قیمت روز نقره، وزن و عیار محاسبه می‌شود.{% elif section.key == 'silver-bar' %}خرید شمش نقره و خرید نقره در ساچمه فر با قیمت روز. قیمت شمش نقره بر اساس قیمت روز نقره، وزن و عیار محاسبه می‌شود.{% elif section.key == 'copper-bar' %}خرید شمش مس و خرید مس در ساچمه فر با قیمت روز. قیمت شمش مس بر اساس قیمت روز مس، وزن و عیار محاسبه می‌شود.{% else %}{{ section.name }} در ساچمه فر{% endif %}{% endblock %}
+{% block content %}
+<div class="phead rv">
+  <h1>{{ section.name }}</h1>
+  <p>قیمت همه‌ی محصولات این بخش به‌صورت لحظه‌ای از روی قیمت جهانی به‌روز می‌شود.</p>
+  <div class="chips">
+    {% for s in menu_sections %}<a class="chp{% if s.key == section.key %} on{% endif %}" href="{% url 'shop:product_section' s.key %}">{{ s.name }}</a>{% endfor %}
+  </div>
+</div>
+
+<section class="glass rv" style="margin-bottom:30px">
+  {% if section.key == 'shot' %}
+    <h2>خرید ساچمه نقره؛ قیمت روز ساچمه نقره</h2>
+    <p>در ساچمه فر ساچمه نقره خریداری کنید. قیمت ساچمه نقره بر اساس قیمت روز نقره، وزن و عیار محاسبه و به‌روز می‌شود. برای خرید ساچمه نقره یا خرید نقره، محصول مورد نظر را انتخاب و به سبد خرید اضافه کنید.</p>
+  {% elif section.key == 'silver-bar' %}
+    <h2>خرید شمش نقره و خرید نقره</h2>
+    <p>در ساچمه فر شمش نقره و نقره خریداری کنید. قیمت شمش نقره بر اساس قیمت روز نقره، وزن و عیار محاسبه و به‌روز می‌شود.</p>
+  {% elif section.key == 'copper-bar' %}
+    <h2>خرید شمش مس و خرید مس</h2>
+    <p>در ساچمه فر شمش مس و مس خریداری کنید. قیمت شمش مس بر اساس قیمت روز مس، وزن و عیار محاسبه و به‌روز می‌شود.</p>
+  {% endif %}
+</section>
+{% if products %}
+<div class="grid">
+  {% for p in products %}{% include "shop/_product_card.html" %}{% endfor %}
+</div>
+{% else %}
+<div class="empty-box glass">
+  <svg viewBox="0 0 100 100"><use href="#ingot"/></svg>
+  <p>هنوز محصولی در بخش «{{ section.name }}» ثبت نشده است.</p>
+</div>
+{% endif %}
+{% endblock %}

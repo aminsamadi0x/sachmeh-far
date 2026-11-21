@@ -1,0 +1,83 @@
+{% if dashboard %}
+<section class="sm-dash" aria-label="خلاصه‌ی وضعیت فروشگاه">
+
+  <div class="sm-block">
+    <div class="sm-head">
+      <h2>قیمت امروز هر گرم</h2>
+      <span>روی هر قیمت بزنید تا ویرایش شود؛ قیمت همه‌ی محصولات خودکار به‌روز می‌شود</span>
+    </div>
+    <div class="sm-prices">
+      {% for p in dashboard.prices %}
+      <a class="sm-plate sm-{{ p.tone }}" href="{{ p.url }}">
+        <span class="sm-plate-label">{{ p.label }}</span>
+        <b class="sm-plate-value">{{ p.value }}</b>
+        <em>تومان</em>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="sm-quick">
+    {% for q in dashboard.quick %}
+    <a href="{{ q.url }}" class="sm-pill{% if q.primary %} sm-pill-main{% endif %}">{{ q.label }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="sm-tiles">
+    {% for t in dashboard.tiles %}
+      {% if t.url %}<a href="{{ t.url }}" class="sm-tile sm-t-{{ t.tone }}">{% else %}<div class="sm-tile sm-t-{{ t.tone }}">{% endif %}
+        <b>{{ t.value }}</b>
+        <span>{{ t.label }}</span>
+        {% if t.hint %}<small>{{ t.hint }}</small>{% endif %}
+      {% if t.url %}</a>{% else %}</div>{% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="sm-cols">
+    <div class="sm-block">
+      <div class="sm-head"><h2>آخرین سفارش‌ها</h2></div>
+      {% if dashboard.recent %}
+      <ul class="sm-list">
+        {% for o in dashboard.recent %}
+        <li>
+          <a href="{{ o.url }}">
+            <span class="sm-l-main"><strong>{{ o.name }}</strong><small dir="ltr">{{ o.number }}</small></span>
+            <span class="sm-l-amount">{{ o.amount }} <small>تومان</small></span>
+            <span class="sm-badge sm-{{ o.kind }}">{{ o.status }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="sm-empty">هنوز سفارشی ثبت نشده. اولین سفارش که برسد همین‌جا دیده می‌شود.</p>
+      {% endif %}
+    </div>
+
+    <div class="sm-block">
+      <div class="sm-head">
+        <h2>کانال‌های متصل</h2>
+        <a href="{{ dashboard.channel_add_url }}">افزودن کانال</a>
+      </div>
+      {% if dashboard.channels %}
+      <ul class="sm-list">
+        {% for c in dashboard.channels %}
+        <li>
+          <div>
+            <span class="sm-l-main"><strong>{{ c.name }}</strong><small>{{ c.platform }}</small></span>
+            <span class="sm-badge sm-plat-{{ c.key }}">{{ c.platform }}</span>
+            {% if not c.active %}<span class="sm-badge sm-mute">غیرفعال</span>
+            {% elif c.ok is True %}<span class="sm-badge sm-ok">متصل</span>
+            {% elif c.ok is False %}<span class="sm-badge sm-bad">خطا در تست</span>
+            {% else %}<span class="sm-badge sm-mute">تست نشده</span>{% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="sm-empty">هنوز کانالی اضافه نشده. توکن ربات تلگرام، بله، ایتا یا روبیکا را وارد کنید تا با یک پیام همه‌ی کانال‌ها پر شود.</p>
+      {% endif %}
+      <p class="sm-foot"><a href="{{ dashboard.social_list_url }}">پست‌های ارسال‌شده</a></p>
+    </div>
+  </div>
+</section>
+{% endif %}

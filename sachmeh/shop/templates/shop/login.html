@@ -1,0 +1,27 @@
+{% extends "shop/base.html" %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block title %}ورود | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block content %}
+<div class="authwrap">
+  <div class="glass">
+    <h1 class="gt">ورود</h1>
+    <p class="alt" style="text-align:start;margin:0 0 18px">با شماره موبایل و رمز عبور وارد شوید.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="nfe">{{ form.non_field_errors.0 }}</div>{% endif %}
+      <div class="fld{% if form.username.errors %} bad{% endif %}">
+        <label for="{{ form.username.id_for_label }}">شماره موبایل</label>
+        {{ form.username }}
+        {% for e in form.username.errors %}<em class="err">{{ e }}</em>{% endfor %}
+      </div>
+      <div class="fld{% if form.password.errors %} bad{% endif %}">
+        <label for="{{ form.password.id_for_label }}">رمز عبور</label>
+        {{ form.password }}
+        {% for e in form.password.errors %}<em class="err">{{ e }}</em>{% endfor %}
+      </div>
+      <button type="submit" class="btn w full">ورود</button>
+    </form>
+    <p class="alt">حساب ندارید؟ <a href="{% url 'shop:register' %}">ثبت‌نام</a></p>
+  </div>
+</div>
+{% endblock %}

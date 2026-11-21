@@ -1,0 +1,25 @@
+{% extends "shop/base.html" %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block title %}ثبت‌نام | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block content %}
+<div class="authwrap">
+  <div class="glass">
+    <h1 class="gt">ثبت‌نام</h1>
+    <p class="alt" style="text-align:start;margin:0 0 18px">شماره موبایل شما شناسه‌ی ورود است؛ نام کاربری لازم نیست.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="nfe">{{ form.non_field_errors.0 }}</div>{% endif %}
+      {% for f in form %}
+      <div class="fld{% if f.errors %} bad{% endif %}">
+        <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+        {{ f }}
+        {% if f.help_text %}<small>{{ f.help_text|safe }}</small>{% endif %}
+        {% for e in f.errors %}<em class="err">{{ e }}</em>{% endfor %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn w full">ساخت حساب</button>
+    </form>
+    <p class="alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'shop:login' %}">ورود</a></p>
+  </div>
+</div>
+{% endblock %}

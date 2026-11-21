@@ -1,0 +1,117 @@
+{% extends "shop/base.html" %}
+{% block title %}{{ analysis.title }} | {{ site_settings.site_name|default:"ساچمه فر" }}{% endblock %}
+{% block meta_description %}{{ analysis.intro|default:analysis.title|striptags|truncatechars:160 }}{% endblock %}
+{% block extra_css %}
+<style>
+.art{max-width:720px;margin-inline:auto}
+.art .back{display:inline-flex;align-items:center;gap:6px;color:var(--mute);font-size:.86rem;margin-bottom:24px;transition:color .3s}
+.art .back:hover{color:#fff}
+.art-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--mute);font-size:.78rem;margin-bottom:8px}
+.art-meta .tag{color:var(--gold2);font-weight:500}
+.art-meta .dot{opacity:.4}
+.art h1{font-weight:800;font-size:clamp(1.5rem,3.2vw,2.1rem);line-height:1.4;margin:0 0 18px;color:#fff}
+
+/* بلوک معرفی: عکس کوچک راست، متن چپ */
+.art-head{display:flex;gap:18px;align-items:flex-start;padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid rgba(205,220,238,.12)}
+.art-thumb{flex:0 0 200px;width:200px;height:150px;border-radius:10px;overflow:hidden;border:1px solid rgba(205,220,238,.15);background:rgba(255,255,255,.03)}
+.art-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.art-thumb.empty{display:grid;place-items:center}
+.art-thumb.empty svg{width:40%;opacity:.5}
+.art-lead{flex:1;min-width:0;color:#c3d1e8;font-weight:300;font-size:.98rem;line-height:1.95;margin:0}
+.art-lead p+p{margin-top:10px}
+
+/* بدنه */
+.art-body{color:#d6e1f2;font-weight:300;font-size:1rem;line-height:2.05}
+.art-body p+p{margin-top:14px}
+.art-body h3,.art-body h4{color:#fff;font-weight:700;font-size:1.1rem;margin:26px 0 8px;line-height:1.5}
+.art-body blockquote{border-inline-start:3px solid var(--gold);padding:4px 16px;margin:18px 0;color:var(--s2);background:rgba(217,178,90,.05);border-radius:0 10px 10px 0}
+.art-body ul,.art-body ol{padding-inline-start:22px;margin:10px 0}
+.art-body li{margin-bottom:4px}
+
+/* بلوک‌های عکس/ویدیو — کوچک، راست‌چین */
+.art-media{display:flex;gap:16px;align-items:flex-start;margin:20px 0;padding:12px;border:1px solid rgba(205,220,238,.1);border-radius:12px;background:rgba(255,255,255,.02)}
+.art-media .m{flex:0 0 200px;width:200px;border-radius:8px;overflow:hidden;background:#000}
+.art-media .m img,.art-media .m video{width:100%;height:auto;display:block;max-height:200px;object-fit:cover}
+.art-media .m video{object-fit:contain;background:#000}
+.art-media .c{flex:1;min-width:0;color:var(--mute);font-size:.86rem;line-height:1.8;padding-top:4px}
+
+/* ویدیوی اصلی (اختیاری) */
+.art-mainvideo{margin:20px 0}
+.art-mainvideo video{width:100%;border-radius:10px;display:block;background:#000;border:1px solid rgba(205,220,238,.15);max-height:50vh}
+
+/* پایان */
+.art-end{margin-top:36px;padding-top:20px;border-top:1px solid rgba(205,220,238,.12);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.art-end a{font-size:.88rem;padding:9px 18px}
+
+@media(max-width:600px){
+  .art-head{flex-direction:column}
+  .art-thumb{flex:none;width:100%;height:180px}
+  .art-media{flex-direction:column;gap:10px}
+  .art-media .m{flex:none;width:100%}
+  .art-media .m img,.art-media .m video{max-height:220px}
+}
+</style>
+{% endblock %}
+{% block content %}
+<article class="art">
+  <a href="{% url 'shop:silver_analysis' %}" class="back">← همه‌ی تحلیل‌ها</a>
+
+  <div class="art-meta">
+    <span class="tag">تحلیل نقره</span>
+    <span class="dot">·</span>
+    <span>{{ analysis.created_at|date:"Y/m/d" }}</span>
+  </div>
+
+  <h1>{{ analysis.title }}</h1>
+
+  {% if analysis.image or analysis.intro %}
+  <div class="art-head">
+    <a class="art-thumb {% if not analysis.image %}empty{% endif %}" href="{{ analysis.image.url|default:'#' }}" target="_blank" rel="noopener">
+      {% if analysis.image %}
+        <img src="{{ analysis.image.url }}" alt="{{ analysis.title }}">
+      {% else %}
+        <svg viewBox="0 0 100 100"><use href="#ingot"/></svg>
+      {% endif %}
+    </a>
+    {% if analysis.intro %}
+    <div class="art-lead">{{ analysis.intro|linebreaks }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if analysis.blocks.all %}
+  <div class="art-body">
+    {% for b in analysis.blocks.all %}
+      {% if b.kind == 'text' and b.text %}
+        {{ b.text|linebreaks }}
+      {% elif b.kind == 'image' and b.file %}
+        <div class="art-media">
+          <a class="m" href="{{ b.file.url }}" target="_blank" rel="noopener">
+            <img src="{{ b.file.url }}" alt="{{ b.caption|default:analysis.title }}" loading="lazy">
+          </a>
+          {% if b.caption %}<div class="c">{{ b.caption }}</div>{% endif %}
+        </div>
+      {% elif b.kind == 'video' and b.file %}
+        <div class="art-media">
+          <div class="m">
+            <video controls preload="metadata" playsinline><source src="{{ b.file.url }}"></video>
+          </div>
+          {% if b.caption %}<div class="c">{{ b.caption }}</div>{% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if analysis.video %}
+  <div class="art-mainvideo">
+    <video controls preload="metadata" playsinline><source src="{{ analysis.video.url }}"></video>
+  </div>
+  {% endif %}
+
+  <div class="art-end">
+    <a href="{% url 'shop:silver_analysis' %}" class="btn o">← بازگشت</a>
+    <a href="{% url 'shop:product_section' 'silver-bar' %}" class="btn w">خرید شمش نقره</a>
+  </div>
+</article>
+{% endblock %}
